@@ -1,6 +1,6 @@
 exports.run = async (client, message, args) => {
 
-  let user = client.getUserFromMention(args[0])
+  const user = client.getUserFromMention(args[0])
 
   if(!user)
     return message.channel.send(":no_entry_sign: I couldn't find that user")
@@ -8,6 +8,16 @@ exports.run = async (client, message, args) => {
   if(user.id === message.author.id) {
     message.channel.send(':no_entry_sign: Cannot give reputation to yourself')
     return client.logAction(`:x: ${message.author.tag} \`${message.author.id}\` tried to give reputation to themselves`)
+  }
+
+
+  let query = await client.Reputation.findOne({where: {target: user.id, user: message.author.id}, order: client.sequelize.literal('given_at DESC')})
+  if(query) {
+    const ms = require('ms')
+
+    let delta = Date.now() - query.given_at
+    if(delta < 86400 * 1000)
+      return message.channel.send(`:warning: You already gave reputation to this user less than 24 hours ago. Please wait ${ms(86400000-delta, {long:true})} before giving reputation to this user again`)
   }
 
   let pos = args[1]

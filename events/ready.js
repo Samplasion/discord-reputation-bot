@@ -7,4 +7,5 @@ module.exports = async (client) => {
 
   client.Reputation.sync()
   client.userSettings.sync()
+  client.user.setActivity(client.config.prefix + 'help');
 };

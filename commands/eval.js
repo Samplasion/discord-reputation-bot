@@ -1,24 +1,30 @@
 exports.run = async (client, message, args) => {
   if(message.author.id !== client.config.owner) return;
 
-  const clean = text => {
-  if (typeof(text) === "string")
-    return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
-  else
-      return text;
-  }
+  const content = args.join(' ').replace(/client\.token/gmi, '\'Not for your eyes\'')
 
-    try {
-      const code = args.join(" ");
-      let evaled = eval(code);
+  try {
+    let result = await eval(content)
+    if (typeof result !== 'string') result = require('util').inspect(result, {
+    depth: 0
+    })
 
-      if (typeof evaled !== "string")
-      evaled = require("util").inspect(evaled);
-
-      message.channel.send(clean(evaled), {code:"xl"});
-    } catch (err) {
-      message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+    if (result.includes(client.token)) result = result.replace(client.token, 'Not for your eyes')
+    if (result.length > 1990) {
+      console.log(result)
+      result = 'Too long to be printed (content got console logged)'
     }
+
+    message.channel.send(result, {code: 'js'})
+
+  } catch(err) {
+    console.error(err)
+    err = err.toString()
+
+    if (err.includes(client.token)) err = err.replace(client.token, 'Not for your eyes')
+
+    return message.channel.send(err, {code: 'js'})
+  }
 };
 
 exports.level = 101;
